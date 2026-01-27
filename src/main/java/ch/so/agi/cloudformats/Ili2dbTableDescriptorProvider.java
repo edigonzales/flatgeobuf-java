@@ -1,4 +1,4 @@
-package ch.so.agi.flatgeobuf;
+package ch.so.agi.cloudformats;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

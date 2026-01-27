@@ -1,5 +1,8 @@
 package ch.so.agi.flatgeobuf;
 
+import ch.so.agi.cloudformats.TableDescriptor;
+import ch.so.agi.cloudformats.WkbGeometryReader;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.ByteArrayOutputStream;

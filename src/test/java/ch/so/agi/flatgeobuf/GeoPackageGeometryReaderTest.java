@@ -1,5 +1,7 @@
 package ch.so.agi.flatgeobuf;
 
+import ch.so.agi.cloudformats.GeoPackageGeometryReader;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.ByteBuffer;
