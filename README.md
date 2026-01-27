@@ -1,16 +1,35 @@
 # flatgeobuf-java
 
-Bibliothek zum Exportieren von Geodaten aus JDBC-Tabellen in FlatGeobuf- **und** Parquet-Dateien (inklusive Spatial Index für FlatGeobuf) mit Unterstützung für GeoPackage-Geometry-Blobs.
+Bibliothek zum Exportieren von Geodaten aus JDBC-Tabellen in FlatGeobuf- **und** Parquet-Dateien (inklusive Spatial Index für FlatGeobuf) mit Unterstützung für GeoPackage-Geometry-Blobs. Das Projekt ist in zwei Artefakte aufgeteilt:
+
+- `library`: wiederverwendbare Export- und Writer-Logik
+- `cli`: ausführbares CLI-Tool (`gpkg2cloudformat.jar`)
+
+## CLI-Tool
+
+Das CLI-Tool erzeugt pro Tabelle eine Datei im gewünschten Format.
+
+```bash
+java -jar gpkg2cloudformat.jar --input /path/to/data.gpkg --output /path/to/out --format flatgeobuf
+```
+
+Optionen:
+
+- `--input`: Geopackage-Datei
+- `--output`: Verzeichnis in das die resultierenden Dateien geschrieben werden (muss existieren)
+- `--tables`: optional. Semikolon-separierte Liste von Tabellennamen, mit doppelten Anfuehrungszeichen (z. B. `"abbaustelle";"surfacestructure"`)
+- `--format`: `flatgeobuf` oder `parquet`
 
 ## Umsetzung
 
 - **Separation of Concern**: Die Export-Logik arbeitet mit generischen Tabellen-Deskriptoren (`TableDescriptorProvider`) und einem austauschbaren `GeometryReader` im neutralen Paket `ch.so.agi.cloudformats`. Dadurch ist der Export nicht an GeoPackage gebunden.
 - **GeoPackage**: `GeoPackageGeometryReader` extrahiert WKB aus GPKG-Geometry-Blobs (Magic-Bytes, Flags, Envelope) und konvertiert sie nach JTS.
+- **GeoPackage-Tabellen**: `GeoPackageTableDescriptorProvider` liest Tabelleninformationen direkt aus `gpkg_contents`/`gpkg_geometry_columns` und erlaubt optional eine Filterung auf konkrete Tabellen.
 - **ili2db-Tabellen**: `Ili2dbTableDescriptorProvider` nutzt die vorgegebene SQL-Abfrage und liefert Tabellenname, Geometriespalte, SRID und GeometryType.
 - **FlatGeobuf**: `FlatGeobufTableWriter` erstellt Header/Features und schreibt einen Hilbert-sortierten `PackedRTree` Index für effiziente Streaming- und Range-Requests.
 - **Parquet**: `ParquetTableWriter` schreibt Parquet-Dateien mit Geometry/Geography Logical Types (ab Parquet 1.17.0) und unterstützt konfigurierbare Row Group Sizes.
 
-## Verwendung
+## Verwendung (Library)
 
 ### Export aus GeoPackage (ili2db-Layout) nach FlatGeobuf
 
@@ -30,9 +49,8 @@ try (Connection connection = DriverManager.getConnection("jdbc:sqlite:your.gpkg"
 ```java
 FlatGeobufTableWriter writer = new FlatGeobufTableWriter(new WkbGeometryReader());
 TableDescriptor table = new TableDescriptor("my_table", "geom", 4326, (byte) GeometryType.MultiPolygon);
-try (OutputStream out = Files.newOutputStream(Path.of("my_table.fgb"))) {
-    writer.writeTable(connection, table, out);
-}
+Path target = Path.of("my_table.fgb");
+writer.writeTable(connection, table, target, writer.defaultOptions());
 ```
 
 ### Export nach Parquet
@@ -60,7 +78,7 @@ ParquetTableWriter.ParquetWriteOptions options = ParquetTableWriter.ParquetWrite
 writer.writeTable(connection, table, target, options);
 ```
 
-### Hinweise für Streaming/HTTP Range Requests
+### Hinweise fuer Streaming/HTTP Range Requests
 
 - Die erzeugten FlatGeobuf-Dateien enthalten einen Spatial Index (`PackedRTree`).
 - Der Index erlaubt effiziente Abfragen per Byte-Range (z.B. HTTP Range Requests).

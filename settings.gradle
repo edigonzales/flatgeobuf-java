@@ -1,1 +1,3 @@
 rootProject.name = 'flatgeobuf-java'
+
+include('library', 'cli')
