@@ -1,11 +1,16 @@
 package ch.so.agi.flatgeobuf;
 
+import ch.so.agi.cloudformats.GeometryReader;
+import ch.so.agi.cloudformats.TableDescriptor;
+import ch.so.agi.cloudformats.TableWriter;
 import com.google.flatbuffers.FlatBufferBuilder;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -34,13 +39,31 @@ import org.wololo.flatgeobuf.generated.ColumnType;
 import org.wololo.flatgeobuf.generated.Feature;
 import org.wololo.flatgeobuf.generated.GeometryType;
 
-public class FlatGeobufTableWriter {
+public class FlatGeobufTableWriter implements TableWriter<FlatGeobufTableWriter.FlatGeobufWriteOptions> {
     private static final int DEFAULT_NODE_SIZE = 16;
 
     private final GeometryReader geometryReader;
 
     public FlatGeobufTableWriter(GeometryReader geometryReader) {
         this.geometryReader = geometryReader;
+    }
+
+    @Override
+    public String fileExtension() {
+        return "fgb";
+    }
+
+    @Override
+    public FlatGeobufWriteOptions defaultOptions() {
+        return FlatGeobufWriteOptions.builder().build();
+    }
+
+    @Override
+    public void writeTable(Connection connection, TableDescriptor table, Path outputFile, FlatGeobufWriteOptions options)
+            throws SQLException, IOException {
+        try (OutputStream out = Files.newOutputStream(outputFile)) {
+            writeTable(connection, table, out, options.indexNodeSize());
+        }
     }
 
     public void writeTable(Connection connection, TableDescriptor table, OutputStream outputStream)
@@ -92,6 +115,29 @@ public class FlatGeobufTableWriter {
         }
 
         writeFlatGeobuf(table, indexNodeSize, columnSpecs, items, featureOffsets, datasetEnvelope, tempFile, outputStream);
+    }
+
+    public record FlatGeobufWriteOptions(int indexNodeSize) {
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static final class Builder {
+            private Integer indexNodeSize;
+
+            public Builder indexNodeSize(int indexNodeSize) {
+                if (indexNodeSize < 0) {
+                    throw new IllegalArgumentException("indexNodeSize must be >= 0");
+                }
+                this.indexNodeSize = indexNodeSize;
+                return this;
+            }
+
+            public FlatGeobufWriteOptions build() {
+                int resolved = indexNodeSize == null ? DEFAULT_NODE_SIZE : indexNodeSize;
+                return new FlatGeobufWriteOptions(resolved);
+            }
+        }
     }
 
     private static List<ColumnSpec> buildColumns(ResultSetMetaData metaData, String geometryColumn) throws SQLException {

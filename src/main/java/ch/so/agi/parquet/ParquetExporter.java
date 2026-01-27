@@ -1,4 +1,4 @@
-package ch.so.agi.flatgeobuf;
+package ch.so.agi.parquet;
 
 import ch.so.agi.cloudformats.GeometryReader;
 import ch.so.agi.cloudformats.TableDescriptorProvider;
@@ -8,12 +8,12 @@ import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class FlatGeobufExporter {
-    private final FlatGeobufTableWriter tableWriter;
+public class ParquetExporter {
+    private final ParquetTableWriter tableWriter;
     private final TableExporter tableExporter;
 
-    public FlatGeobufExporter(GeometryReader geometryReader) {
-        this.tableWriter = new FlatGeobufTableWriter(geometryReader);
+    public ParquetExporter(GeometryReader geometryReader) {
+        this.tableWriter = new ParquetTableWriter(geometryReader);
         this.tableExporter = new TableExporter();
     }
 
@@ -25,8 +25,7 @@ public class FlatGeobufExporter {
     public void exportTables(Connection connection,
                              TableDescriptorProvider tableDescriptorProvider,
                              Path outputDirectory,
-                             FlatGeobufTableWriter.FlatGeobufWriteOptions options)
-            throws SQLException, IOException {
+                             ParquetTableWriter.ParquetWriteOptions options) throws SQLException, IOException {
         tableExporter.exportTables(connection, tableDescriptorProvider, outputDirectory, tableWriter, options);
     }
 }

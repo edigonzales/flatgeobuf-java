@@ -1,4 +1,4 @@
-package ch.so.agi.flatgeobuf;
+package ch.so.agi.cloudformats;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;

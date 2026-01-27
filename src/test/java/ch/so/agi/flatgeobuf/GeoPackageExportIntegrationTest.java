@@ -1,5 +1,8 @@
 package ch.so.agi.flatgeobuf;
 
+import ch.so.agi.cloudformats.GeoPackageGeometryReader;
+import ch.so.agi.cloudformats.Ili2dbTableDescriptorProvider;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.FileInputStream;
