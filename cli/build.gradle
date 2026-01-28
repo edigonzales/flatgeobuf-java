@@ -28,10 +28,11 @@ tasks.withType(Test).configureEach {
 }
 
 tasks.named('jar', Jar) {
-    archiveBaseName = 'gpkg2cloudformat'
+    archiveFileName = 'gpkg2cloudformats-cli.jar'
     manifest {
         attributes 'Main-Class': 'ch.so.agi.cli.Gpkg2CloudFormatCli'
     }
+    dependsOn ':library:jar'
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }

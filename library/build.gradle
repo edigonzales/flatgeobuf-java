@@ -30,3 +30,7 @@ dependencies {
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
 }
+
+tasks.named('jar', Jar) {
+    archiveFileName = 'gpkg2cloudformats.jar'
+}
