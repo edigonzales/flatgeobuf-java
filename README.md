@@ -1,4 +1,4 @@
-# flatgeobuf-java
+# gpkg2cloudformats
 
 Bibliothek zum Exportieren von Geodaten aus JDBC-Tabellen in FlatGeobuf- **und** Parquet-Dateien (inklusive Spatial Index für FlatGeobuf) mit Unterstützung für GeoPackage-Geometry-Blobs. Das Projekt ist in zwei Artefakte aufgeteilt:
 
