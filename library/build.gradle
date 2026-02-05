@@ -39,8 +39,8 @@ def mavenPassword = providers.gradleProperty('mavenPassword')
         .orElse(providers.environmentVariable('MAVEN_PASSWORD'))
         
 println("*********");
-println(mavenUsername)
-println(mavenPassword)
+println(mavenUsername.orNull)
+println(mavenPassword.orNull)
 
 publishing {
     publications {
